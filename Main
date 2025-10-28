@@ -1,1 +1,41 @@
+% sample ECG R-R identification code
+clc
+clear
+close all
 
+% general data extraction and creation a sample of 5000
+data = read_ECG('mit-bih-arrhythmia-database-1.0.0\100.dat');
+sampled = data(1:1000,1);
+samplingint = 1800/numel(data(:,1));
+timeax = [samplingint:samplingint:1800].*1000;
+
+% plotting data found above
+figure(1)
+plot(timeax, data)
+title("ECG data plot");
+xlabel("Time (ms)");
+ylabel("Voltage (mV)");
+
+figure(2)
+sampledtimeax = timeax(1:numel(sampled));
+plot(sampledtimeax,sampled)
+title("ECG data plot (first data set, data points 1-1000)");
+xlabel("Time (ms)");
+ylabel("Voltage (mV)");
+
+% extract peaks of voltage>1050mV for data set 1
+datas = data(:,1);
+[peakz, indixes] = findpeaks(datas,'MinPeakHeight',1050);
+
+% finds R time values from indixes and converts it to R-R data set
+Rindi = timeax(indixes);
+RtoR = hampel(Rindi(2:numel(Rindi)) - Rindi(1:numel(Rindi)-1), 8);
+meanRtoR = mean(RtoR);
+fprintf("The average R-R time interval is %4.2f ms \n", meanRtoR)
+
+% plots R-R variance
+figure(3)
+plot(RtoR)
+title("Plot of R-R intervals")
+xlabel("Sample number")
+ylabel("Interval (ms)")
